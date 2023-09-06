@@ -11,7 +11,7 @@ app.use(cors({origin:'*'}))
 
 // app.use('/api/order',require('./routes/orderRoute'))
 
-const port=process.env.PORT 
+const port=process.env.PORT ||5000
 const customerRoute= require('./routes/customerRoute')
 const orderRoute= require('./routes/orderRoute')
 const adminRoute= require('./routes/adminRoute')
