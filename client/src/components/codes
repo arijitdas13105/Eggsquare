@@ -1,0 +1,1844 @@
+//backend
+
+//authMiddlewate 
+
+const jwt = require('jsonwebtoken');
+
+const verifyToken = async (req, res, next) => {
+  const token = req.header('Authorization');
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized, missing token" });
+  }
+
+  try {
+    console.log(token);
+    const decoded = await jwt.verify(token, "arijitdas");
+
+
+    req.customerId = decoded.customerId;
+    console.log("Request customerId:",req.customerId);
+    console.log("Decoded customerId:",decoded.customerId);
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.status(401).json({ error: "Unauthorized, invalid token" });
+  }
+};
+
+module.exports = verifyToken;
+
+
+//CustomerController.js
+
+const Customer =require('../models/customerModel')
+const jwt= require('jsonwebtoken')
+const verifyToken= require('../cconfig/authMiddleware')
+//register  customer
+
+exports.registerCustomer=async(req,res)=>{
+    try {
+        const {email,password}=req.body
+    let customer = await Customer.findOne({email})
+
+    if(customer){
+        return res.status(400).json({error:"already exist"})
+    }
+
+    customer=new Customer({email,password})
+    
+    await customer.save()
+    res.json({ message: 'Customer registered successfully' });
+
+
+    } catch (error) {
+        console.error('Error in registerCustomer:', error);
+    res.status(500).json({ error: 'Server error' });
+    }
+    
+}
+
+//login customer 
+
+
+exports.login=async(req,res)=>{
+    try {
+        const {email,password}=req.body
+
+        const customer = await Customer.findOne({ email });
+
+        if (!customer) {
+          return res.status(400).json({ error: 'Customer not found' });
+        }
+        console.log("📧customer.email",customer.email);
+
+        if(customer.password !== password){
+            return res.status(401).json({error:"invalid password"})
+        }
+        const token=jwt.sign({customerId:customer._id},"arijitdas")
+        res.status(200).json({ success: true, customer:customer,tokens : token, });
+        // console.log(" customer details=>",customer);
+
+    } catch (error) {
+        console.error('Error in loginCustomer:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
+
+exports.addAddress = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const { name, pin, phone, locationName } = req.body;
+
+    // Ensure that the token is valid and matches the customerId
+    if (req.customerId !== customerId) {
+      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+    }
+
+    // Find the customer by their ID
+    const customer = await Customer.findById(customerId);
+
+
+    if (!customer) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+    
+
+    // Add the new address to the customer's address array
+    customer.address.push({ name, pin, phone, locationName });
+
+    await customer.save();
+
+    res.json({ message: "Address added successfully", customer });
+    console.log("customer is=>" ,customer.email);
+  } catch (error) {
+    console.error("Error in addAddress:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+  // Controller for fetching all addresses of a customer
+exports.getAddress = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    console.log("🧑customerId",customerId);
+    // Ensure that the token is valid and matches the customerId
+    if (req.customerId !== customerId) {
+      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+    }
+
+    // Find the customer by their ID
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+
+    // Extract and send only the address array of the customer
+    const addresses = customer.address;
+
+    res.json(addresses);
+  } catch (error) {
+    console.error("Error in getAddress:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+
+// addCart
+
+exports.addCartItem =async(req,res)=>{
+  try {
+    console.log("clickkkedddddd");
+    const customerId=req.params.id
+    // const {title,price,image}=req.body
+    const cartItemData  = req.body;
+    console.log( "📌customerId :",customerId);
+
+    if(req.customerId!== customerId){
+      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+    }
+    
+    const customer =await Customer.findById(customerId)
+    if (!customer) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+    console.log("cartItemData(customerController-193):", cartItemData);
+
+    if (!Array.isArray(cartItemData) || cartItemData.some(item => 
+      typeof item.title !== 'string' ||
+      typeof item.price !== 'number' ||
+      typeof item.image !== 'string' ||
+      typeof item.quantity !== 'number' ||
+      typeof item.packet !== 'number' ||
+      typeof item.total !== 'number'
+    )) {
+      return res.status(400).json({ error: "Invalid cartItemData format" });
+    }
+// Clear the existing cartItems array for the customer
+customer.cartItems = [];
+
+// Add only the current active cart items to the customer's cart
+cartItemData.forEach(item => {
+  customer.cartItems.push({
+    title: item.title,
+    price: item.price,
+    image: item.image,
+    quantity: item.quantity,
+    packet: item.packet,
+    total: item.total,
+    // Add other properties of the cart item as needed...
+  });
+}); 
+await customer.save();
+
+res.json({ message: "Cart items added successfully", cartItems: cartItemData });
+console.log("Customer cart updated with new cart items");
+
+} catch (error) {
+  console.error("Error adding cart item to customer's cart:", error);
+  res.status(500).json({ error: "Server error" });
+}
+
+}
+
+
+exports.placeOrder = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const { cartItems, orderTotal, address} = req.body;
+    console.log("req.customerId",req.customerId);
+    console.log("customerId",customerId);
+    console.log("cartItem is (customer controller -311)" ,cartItems);
+    if (req.customerId != customerId) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
+    }
+    const customer = await Customer.findById(customerId);
+    console.log(customer.email);
+    
+   
+console.log("response (customer controller-332)",cartItems);
+    const orderItem = cartItems.map((item) => ({
+      title: item.title,
+      price: item.price,
+      image: item.image,
+      quantity: item.quantity,
+      packet: item.packet,
+      total: item.total,
+    }));
+    console.log(orderItem);
+    const order = {
+      items: cartItems,
+      orderTotal: orderTotal,
+      addressName:address
+    };
+    console.log(order);
+    if (customer) {
+      customer.orders.push(order);
+      await customer.save();
+      res.json({ message: "Order placed successfully", order });
+    }
+  } catch (error) {
+    console.error("Error placing order:", error);
+    res.status(500).json({ error: "Server error",error });
+  }
+};
+
+
+
+exports.getUserOrder=async(req,res)=>{
+
+  try {
+    const customerId=req.params.id
+    if(req.customerId!== customerId){
+      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+    }
+    const customer= await Customer.findById(customerId)
+    if(!customer){
+      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+
+    }
+    const orderHistory= customer.orders
+    res.json(orderHistory)
+  } catch (error) {
+    console.error("Error fetching user's order history:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
+// controllers/paymentController.js
+const Razorpay = require('razorpay');
+const crypto = require("crypto");
+
+const instance = new Razorpay({
+  key_id: "rzp_test_AudIy7hoBdJbPk",
+  key_secret: "kYNvwDsfM7z5CuvK6GyyaBY7",
+});
+
+  exports.createRazorpayOrder = async (req, res) => {
+    try {   
+           const customerId = req.params.id;
+           const cartItems = req.body.cartItems; // Assuming you send the cartItems from the frontend
+    
+           const items = cartItems.map(item =>
+              ({
+             name: item.title,
+             quantity: item.quantity,
+             currency: 'INR',
+             amount: item.total * 100, // Amount in paise
+           }));
+           console.log("payment controller -130",items)
+           const options = {
+             amount: cartItems.reduce((total, item) => total + item.total * 100, 0),
+             currency: 'INR',
+             receipt: crypto.randomBytes(10).toString("hex"),
+             capture: true,
+             notes: {
+              // Add any additional notes if needed
+            },
+            capture: true,
+            // Add more options as needed...
+          };
+          instance.orders.create(options,(error,order)=>{
+            console.log("payment controller -147",options);
+            console.log("payment controller -147",order);
+            if (error) {
+              console.log(error);
+              return res.status(500).json({ message: "Something Went Wrong!" });
+            }
+            res.status(200).json({ data: order });
+            console.log("payment controller -153",order);
+            // res.status(200).json(order);
+          })
+        } catch (error) {
+          console.error('Error creating Razorpay order:', error);
+          res.status(500).json({ error: 'Server error' });
+        }
+      };
+
+      exports.verify = async (req, res) => {
+        try {
+          const { customerId } = req.params;
+          const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+          req.body;
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSign = crypto
+          .createHmac("sha256", "kYNvwDsfM7z5CuvK6GyyaBY7")
+          .update(sign.toString())
+          .digest("hex");
+    
+        if (razorpay_signature === expectedSign) {
+          return res.status(200).json({ message: "Payment verified successfully" });
+        } else {
+          return res.status(400).json({ message: "Invalid signature sent!" });
+        }
+  
+        } catch (error) {
+          console.error('Error creating Razorpay order:', error);
+          res.status(500).json({ error: 'Server error' });
+        }
+      };
+    
+
+      
+// models/customerModel.js
+const mongoose = require('mongoose');
+const cartItemSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+  image: { type: String, required: true },
+  quantity: { type: Number, required: true }, // Add quantity property
+  packet: { type: Number, required: true }, // Add packet property
+  total: { type: Number, required: true }, // Add total property
+  // Add other properties of the cart item as needed...
+});
+
+const orderItemSchema=new mongoose.Schema({
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+  image: { type: String, required: true },
+  quantity: { type: Number, required: true },
+  packet: { type: Number, required: true },
+  total: { type: Number, required: true },
+})
+
+const orderSchema= new mongoose.Schema({
+  items:[orderItemSchema],
+  orderTotal:{type:Number,required:true},
+  // addressName:{ type: String, required: true },
+  addressName: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Customer.address', // Reference the address subdocument of the Customer model
+    required: true
+  }
+})
+
+const customerSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  cartItems: [cartItemSchema],
+  address: [
+    {
+      name: { type: String, required: true },
+      pin: { type: String, required: true },
+      phone: { type: Number, required: true },
+      locationName: { type: String, required: true },
+      // Other address properties...
+    },
+  ],
+  orders:[orderSchema]
+});
+
+const Customer = mongoose.model('Customer', customerSchema);
+
+module.exports = Customer;
+
+
+//customerRoute.js
+
+const express= require('express')
+const router=express.Router()
+const razorpayController = require('../controller/paymentController'); // Create this controller
+
+const customerController= require('../controller/customerController')
+const verifyToken=require('../cconfig/authMiddleware')
+router.post('/register',customerController.registerCustomer)
+router.post('/login',customerController.login)
+router.post('/:id/addAddress',verifyToken,customerController.addAddress )
+router.get('/:id/alladdress',verifyToken,customerController.getAddress)
+router.post('/:id/placeOrder',verifyToken,customerController.placeOrder)
+router.post('/:id/addcartitem', verifyToken, customerController.addCartItem);
+router.post('/createOrder', razorpayController.createRazorpayOrder);
+router.post('/verify', razorpayController.verify);
+module.exports=router;
+
+
+//orderRoute
+const express = require('express');
+const router = express.Router();
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+const verifyToken=require('../cconfig/authMiddleware')
+router.post("/orders", async (req, res) => {
+	try {
+		const instance = new Razorpay({
+			key_id: "rzp_test_AudIy7hoBdJbPk",
+          key_secret: "kYNvwDsfM7z5CuvK6GyyaBY7",
+        });
+        const customerId = req.params.id;
+        const cartItems = req.body.cartItems; // Assuming you send the cartItems from the frontend
+        const cartTotal=req.body.total
+        const options = {
+          amount:cartTotal*100,
+          currency: "INR",
+          receipt: crypto.randomBytes(10).toString("hex"),
+        };
+    
+        instance.orders.create(options, (error, order) => {
+          console.log(order);
+          if (error) {
+            console.log(error);
+            return res.status(500).json({ message: "Something Went Wrong!" });
+          }
+          res.status(200).json({ data: order });
+        });
+      } catch (error) {
+        res.status(500).json({ message: "Internal Server Error!" });
+        console.log(error);
+      }
+    });
+    
+router.post("/verify",async (req, res) => {
+  // router.post("/:id/verify",verifyToken,async (req, res) => {
+    try {
+          const { customerId } = req.params;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+        req.body;
+      const sign = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSign = crypto
+        .createHmac("sha256", "kYNvwDsfM7z5CuvK6GyyaBY7")
+        .update(sign.toString())
+        .digest("hex");
+  
+      if (razorpay_signature === expectedSign) {
+        return res.status(200).json({ message: "Payment verified successfully" });
+      } else {
+        return res.status(400).json({ message: "Invalid signature sent!" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error!" });
+      console.log(error);
+    }
+  });
+  
+  
+  module.exports = router;
+
+  //server.js
+
+const express= require('express')
+const mongoose = require('mongoose')
+const cors = require('cors')
+
+const app=express()
+app.use(cors())
+app.use(express.json())
+app.use(cors({origin:'*'}))
+
+// app.use('/api/order',require('./routes/orderRoute'))
+
+const port=5000;
+const customerRoute= require('./routes/customerRoute')
+const orderRoute= require('./routes/orderRoute')
+
+mongoose.connect('mongodb+srv://arijitdasofficial05:FekwKsMxgNZDO7iA@cluster0.w35zck2.mongodb.net/',{
+
+
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+
+
+})  
+
+const db=mongoose.connection
+
+db.once('open', () => {
+    console.log('Connected to MongoDB');
+  });
+  app.get('/hello', (req, res) => {
+    res.send('hello worDFDld');
+  });
+
+  app.use('/api/customer',customerRoute)
+  app.use('/api/payments',orderRoute)
+app.listen(port,()=>{
+
+    console.log(`server is running on ${port}`);
+
+})
+
+
+
+
+
+
+
+
+
+
+//frontend part  of the code 
+
+
+
+
+//userAction
+
+import React, { useState, useEffect, useReducer } from "react";
+
+import { useNavigate, useNavigation } from "react-router-dom";
+import BASE_URL from '../../files/config'; // Adjust the import path as per your project structure
+import { useDispatch, useSelector } from "react-redux";
+
+import { LOGIN_FAILURE, LOGIN_SUCCESS ,
+  GET_ADDRESS,ADD_ADDRESS,ADD_TO_CUSTOMER_CART,CREATE_RAZORPAY_ORDER_SUCCESS,
+  CREATE_RAZORPAY_ORDER_FAILURE,CREATE_RAZORPAY_ORDER_REQUEST
+
+} from "../constants/allContants";
+import axios from 'axios'
+export const loginSuccess=(token,customer)=>{
+    return {
+        type:LOGIN_SUCCESS,
+        payload:{token,customer}
+    }
+}
+
+export const loginFail=(error)=>{
+    return {
+        type:LOGIN_FAILURE,
+        payload:error
+    }
+}
+
+
+export const  LoginAction=(email,password)=>async (dispatch)=> 
+
+{
+
+   
+try { 
+  const response = await axios.post(`${BASE_URL}/api/customer/login`, { email, password });
+  const {tokens,customer}=response.data
+  console.log("Login Response:", response.data);
+  dispatch(loginSuccess(tokens,customer))
+  console.log("customer is :-",customer);
+
+        localStorage.setItem("token", tokens);
+        console.log("Token saved to localStorage:", tokens);
+      } catch (error) {
+        dispatch(loginFail("login failed:",error))
+    }
+    }         
+export const addAddress=(userId,addressData)=>async(dispatch)=>{
+      try {
+          const authToken = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: authToken, 
+          },
+        };
+
+           
+      const response= await axios.post(`${BASE_URL}/api/customer/${userId}/addAddress`,addressData, config)
+      if (response.status === 200) {
+        const newAddress = response.data;
+        console.log(response);
+         
+        console.log("Add Address Response:", response.data);
+        dispatch({
+          type: ADD_ADDRESS,
+          payload: newAddress,
+        });
+  
+        console.log('Add Address Response:', response.data);
+      } else {
+        console.error('Error adding new address:', response.data.error);
+      }
+     
+  } catch (error) {
+      console.error("Error adding new address:", error);
+  }
+  }
+
+export const getUserAddress = (userId) => async (dispatch) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/customer/${userId}/alladdress`);
+      const userAddress  = response.data;
+      console.log("Fetched user addresses:", userAddress);
+      dispatch({
+        type: GET_ADDRESS,
+        payload: userAddress,
+      });
+    } catch (error) {
+      console.error("Error fetching user addresses:", error);
+    }
+  };
+
+
+  export const addToCustomerCarts = (userId, cartItemData) => async (dispatch) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/api/customer/${userId}/addCartItem`, cartItemData);
+      console.log("Response from backend:", response.data);
+      dispatch({
+        type: ADD_TO_CUSTOMER_CART,
+        payload: cartItemData, // assuming cartItemData contains the updated cart items
+      });
+    } catch (error) {
+      console.error("Error adding cart items to customer database:", error);
+    }
+  };
+
+
+  export const createRazorpayOrder = (userId, cartItemData) => async (dispatch) => {
+
+    try {
+      const cartTotal = cartItemData.reduce((total, item) => total + item.total, 0);
+      const authToken = localStorage.getItem("token"); 
+     const orderResponse = await axios.post(
+      `${BASE_URL}/api/customer/${userId}/createOrder`,
+      { cartItems: cartItemData },
+      {
+        headers: {
+          Authorization: authToken,
+        },
+      }
+    );
+    console.log(orderResponse);
+      const order_id = orderResponse.data.order_id;
+      const options = {
+        key: "rzp_test_AudIy7hoBdJbPk",
+        amount: cartTotal * 100,
+        currency: "INR",
+        name: "Your Store",
+        description: "Test Transaction",
+        order_id: order_id,
+        handler: async (response) => {
+          try {
+            const verifyResponse = await axios.post(
+              `${BASE_URL}/api/customer/${userId}/verify`,
+              response
+            );
+  
+            dispatch(addToCustomerCarts(userId, cartItemData));
+
+          } catch (error) {
+            console.log("Error verifying payment:", error);
+          }
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+  
+      const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      
+    }
+  };
+
+  export const createRazorpayOrderSuccess = (order) => {
+    return {
+      type: CREATE_RAZORPAY_ORDER_SUCCESS,
+      payload: order,
+    };
+  };
+  
+  export const createRazorpayOrderFailure = (error) => {
+    return {
+      type: CREATE_RAZORPAY_ORDER_FAILURE,
+      payload: error,
+    };
+  };
+
+  export const createRazorpayOrderRequest = () => ({
+    type: CREATE_RAZORPAY_ORDER_REQUEST,
+  });
+
+
+export const placeOrder=(userId,orderData)=>async(dispatch)=>{
+try {
+    const authToken =localStorage.getItem("token")
+    // console.log("token token toke =>",authToken);
+    const config={
+      headers:{
+        Authorization:authToken
+      }
+    }
+    console.log("oderdata(userAction-332)",orderData);
+    const response = await axios.post (`${BASE_URL}/api/customer/${userId}/placeOrder`,orderData,config)
+    console.log("response (userAction-332)",response.data);
+   
+   
+} catch (error) {
+  console.error("Error placing order:", error);
+}
+}
+
+
+
+  
+export const handleOrder = (userId, cartItemData) => async (dispatch) => {
+  try {
+    const cart=useSelector((state)=>state.cart)
+    console.log("userAction-253",cartItemData);
+    const orderResponse = await axios.post(`${BASE_URL}/api/customer/${userId}/create-razorpay-order`, { cartItems: cartItemData });
+    const order_id = orderResponse.data.data.id; // Get the order ID
+    const cartTotal = cart.cartItems.reduce((total, item) => total + item.total, 0);
+
+    const options = {
+      key: "rzp_test_AudIy7hoBdJbPk",
+      amount: cartTotal * 100,
+      currency: "INR",
+      name: "Your Store",
+      description: "Test Transaction",
+      order_id: order_id,
+      handler: async (response) => {
+        try {
+          const verifyResponse = await axios.post(
+            `${BASE_URL}/api/customer/${userId}/verify`,
+            response
+          );
+
+          dispatch(addToCustomerCarts(userId, cartItemData));
+
+        
+        } catch (error) {
+          console.log("Error verifying payment:", error);
+        }
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.log("Error handling checkout:", error);
+  }
+};
+
+export const getAddress = (userId) => async (dispatch) => {
+  try {
+    const authToken = localStorage.getItem('token');
+    const config = {
+      headers: {
+        Authorization: authToken, 
+      },
+    };
+    const response = await axios.get(`${BASE_URL}/api/customer/${userId}/alladdress`,{
+      headers: {
+        Authorization: authToken,
+      },
+    });
+
+
+    if(response.status === 200){
+      const userAddress  = response.data;
+      console.log("Fetched user addresses:", userAddress);
+      dispatch({
+        type: GET_ADDRESS,
+        payload: userAddress,
+      });
+    }
+   
+  } catch (error) {
+    console.error("Error fetching user addresses:", error);
+  }
+};
+
+export const getUserOrder=(userId)=>async(dispatch)=>{
+  try {
+    const authToken=localStorage.getItem("token")
+    if(!authToken){
+
+    }
+    const config={
+      headers:{
+        Authorization:authToken,
+      }
+    }
+    const response= await axios.get(`${BASE_URL}/api/customer/${userId}/orders`, config)
+    if(response.status==200){
+      const orderHistory=response.data
+      dispatch(getOrderHistorySuccess(orderHistory))
+    }
+  } catch (error) {
+    console.error('Error fetching user order history:', error);
+  }
+}
+export const getOrderHistorySuccess=(orderHistory)=>{
+return{
+  type:GET_USER_ORDER_HISTORY_SUCCESS,
+  payload:orderHistory
+}
+}
+
+
+//cartAction
+
+import axios from "axios";
+import {
+  CART_ADD,
+  ALL_CART,
+  PACKET_INCREASE,
+  PACKET_DECREASE,
+  CREATE_RAZORPAY_ORDER_SUCCESS,
+  CREATE_RAZORPAY_ORDER_FAILURE
+} from "../constants/allContants";
+import { placeOrder } from "./userActions";
+
+const generateCartItemID = (productId, quantity) => {
+  return `${productId}_${quantity}`;
+};
+
+export const addCart = (cartItem) => {
+  return {
+    type: CART_ADD,
+    payload: cartItem,
+  };
+};
+
+export const getAllCart = () => {
+  const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+  return {
+    type: ALL_CART,
+    payload: cartItems,
+  };
+};
+
+
+export const addToCart = (product, quantity, packet) => {
+  const cartItemId = generateCartItemID(product.id, quantity);
+
+  return (dispatch, getState) => {
+     // Get the current cart state from Redux
+    const { cart } = getState();
+    const existingCartItem = cart.cartItems.find(
+      (item) => item.id === cartItemId
+    );
+
+    if (existingCartItem) {
+      // If the same product with the same quantity is already in the cart, update the packet quantity
+      const updatedCartItems = cart.cartItems.map((item) =>
+        item.id === cartItemId
+          ? {
+              ...item,
+              packet: item.packet + packet,
+              total: item.price * item.quantity * (item.packet + packet),
+            }
+          : item
+      );
+      localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+      dispatch(getAllCart());
+      console.log("Packet updated in cart!");
+    } else {
+      // If the product with the same quantity is not in the cart, add the new product to the cart
+      const total = product.price * quantity * packet;
+      const cartItem = { ...product, quantity, packet, total, id: cartItemId };
+      const updatedCartItems = [...cart.cartItems, cartItem];
+      localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+      dispatch(getAllCart());
+      console.log("Product added to cart!");
+    }
+  };
+};
+
+export const increasePacket = (itemId) => {
+  return {
+    type: PACKET_INCREASE,
+    payload: itemId,
+  };
+};
+
+export const decreasePacket = (itemId) => {
+  return {
+    type: PACKET_DECREASE,
+    payload: itemId,
+  };
+};
+
+export const addToCustomerCart = (userId, cartItemData) => async (dispatch) => {
+  try {
+    // Get the token from localStorage
+    const authToken = localStorage.getItem("token");
+
+    // Send a POST request to the backend to add the cart items to the customer's cart
+    const response = await axios.post(
+      `http://localhost:5000/api/customer/${userId}/addCartItem`,
+      cartItemData,
+      {
+        headers: {
+          Authorization: authToken, // Pass the token in the request header
+        },
+      }
+    );
+
+    console.log(response);
+
+    const cartTotal = response.data.cartItems.reduce((total, item) => total + item.total, 0);
+      console.log(cartTotal);
+    console.log("Response from backend:", response.data);
+    const orderData={
+      cartItems:response.data.cartItems,
+      orderTotal:cartTotal
+    }
+    console.log("Response from orderData:", orderData);
+    dispatch(placeOrder(userId,orderData))
+
+    // You can dispatch an action here if needed after adding cart items to the customer's cart.
+  } catch (error) {
+    console.error("Error adding cart items to customer database:", error);
+  }
+};
+
+
+
+//userReducer
+
+const {
+  LOGIN_SUCCESS,
+  LOGIN_FAILURE,
+  GET_ADDRESS,
+  ADD_ADDRESS,ADD_TO_CUSTOMER_CART,
+  CREATE_RAZORPAY_ORDER_SUCCESS,
+  CREATE_RAZORPAY_ORDER_FAILURE,
+  CREATE_RAZORPAY_ORDER_REQUEST
+} = require("../constants/allContants");
+
+// LOGIN_SUCCESS,LOGIN_FAILURE
+
+const initialState = {
+  token: null,
+  customer: null,
+  addresses: [],
+  error: null,
+  isAuthenticated:false,
+  createRazorpayOrderLoading: false,
+  createRazorpayOrderError: null,
+  razorpayOrder: null,
+  orderHistory: [],
+};
+
+export const userReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case LOGIN_SUCCESS:
+      return {
+       
+        ...state,
+        customer: action.payload.customer,
+        token: action.payload.token,
+        error: null,
+      };
+    case LOGIN_FAILURE:
+        return {
+            ...state,
+            error: action.payload,
+          };
+    case GET_ADDRESS:
+      return {
+        ...state,
+        addresses: action.payload,
+         };
+    case ADD_ADDRESS:
+        return {
+            ...state,
+            addresses:[...state.addresses,action.payload]
+        }
+     case ADD_TO_CUSTOMER_CART:
+      return{
+        ...state,
+        cartItems: action.payload,
+      }   
+
+
+      case CREATE_RAZORPAY_ORDER_REQUEST:
+      return {
+        ...state,
+        createRazorpayOrderLoading: true,
+        createRazorpayOrderError: null,
+      };
+
+    case CREATE_RAZORPAY_ORDER_SUCCESS:
+      return {
+        ...state,
+        createRazorpayOrderLoading: false,
+        razorpayOrder: action.payload,
+      };
+
+    case CREATE_RAZORPAY_ORDER_FAILURE:
+      return {
+        ...state,
+        createRazorpayOrderLoading: false,
+        createRazorpayOrderError: action.payload,
+      };
+
+      case GET_USER_ORDER_HISTORY_SUCCESS:
+        return{
+          ...state,
+          orderHistory: action.payload,
+        }
+  
+      
+    default:
+      return state;
+  }
+};
+
+
+
+//cartReducer
+
+import {
+  CART_ADD,
+  ALL_CART,
+  PACKET_INCREASE,
+  PACKET_DECREASE,
+} from "../constants/allContants";
+
+const initialState = {
+  cartItems: [],
+};
+
+export const cartReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case CART_ADD:
+      return {
+        ...state,
+        cartItems: [...state.cartItems, action.payload],
+      };
+
+    case ALL_CART:
+      return {
+        ...state,
+        cartItems: action.payload,
+      };
+
+    case PACKET_INCREASE:
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item) =>
+          item.id === action.payload
+            ? {
+                ...item,
+                packet: item.packet + 1,
+                total: item.price * item.quantity * (item.packet + 1),
+              }
+            : item
+        ),
+      };
+
+    case PACKET_DECREASE:
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item) =>
+          item.id === action.payload
+            ? {
+                ...item,
+                packet: item.packet - 1,
+                total: item.price * item.quantity * (item.packet - 1),
+              }
+            : item
+        ),
+      };
+
+    default:
+      return state;
+  }
+};
+
+
+
+//store.js
+
+import {createStore,combineReducers,applyMiddleware} from 'redux'
+import { composeWithDevTools } from 'redux-devtools-extension';
+
+import thunk from 'redux-thunk'
+import  {userReducer}  from './reducers/userReducer'
+import  {cartReducer}  from './reducers/cartReducer'
+
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // Defaults to localStorage for web
+const composeEnhancers = composeWithDevTools({
+  });
+
+  
+const rootReducer=combineReducers({
+    user:userReducer,
+    cart:cartReducer
+})
+
+const persistConfig = {
+    key: 'root',
+    storage,
+  };
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+
+  const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(thunk)));
+
+  let persistor = persistStore(store);
+  
+  export { store, persistor };
+
+
+  // Cart.js
+
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  getAllCart,
+  addToCart,
+  increasePacket,
+  decreasePacket,
+  addToCustomerCart,
+  addCart,
+} from "../redux/actions/cartAction";
+import {  addAddress, getUserAddress } from "../redux/actions/userActions";
+import "./Cart.css";
+
+const Cart = () => {
+
+
+  const cart=useSelector((state)=>state.cart)
+ 
+
+  const userAddresses = useSelector((state) => state.user.addresses);
+  
+
+
+  const [checkout, setCheckout] = useState(false);
+  const [isLoggedin, setIsLoggedin] = useState(false);
+  const navigate = useNavigate();
+
+  // Get cartItems from Redux store
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  console.log("user is ",user);
+  useEffect(() => {
+    dispatch(getAllCart());
+    checkUserLoginStatus();
+  }, [dispatch]);
+
+  const checkUserLoginStatus = () => {
+    const authToken = localStorage.getItem("token");
+    setIsLoggedin(!!authToken);
+
+    if (isLoggedin && user.customer) {
+      dispatch(getUserAddress(user.customer._id));
+    }
+  };
+
+  const updateLocalStorageCartItems = (cartItems) => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  };
+  const handleIncreasePacket = (itemId) => {
+    dispatch(increasePacket(itemId));
+    const updatedCartItems = cartItems.map((item) =>
+      item.id === itemId
+        ? {
+            ...item,
+            packet: item.packet + 1,
+            total: item.price * item.quantity * (item.packet + 1),
+          }
+        : item
+    );
+    updateLocalStorageCartItems(updatedCartItems);
+  };
+
+  const handleDecreasePacket = (itemId) => {
+    dispatch(decreasePacket(itemId));
+  };
+
+  const total = cartItems.reduce((accumulator, item) => {
+    return accumulator + item.total;
+  }, 0);
+
+  if (checkout) {
+    console.log("checkout page");
+  }
+
+  const handleCheckOut = () => {
+    if (isLoggedin) {
+     
+
+      setCheckout(true);
+      navigate("/checkout");
+      console.log("checkout ho gaya");
+      
+    } else {
+      navigate("/login"); 
+      console.log("user Not loggedin");
+    }
+  };
+
+
+  const handleAddAddress = () => {
+    const userId=user.customer._id
+    const addressData = {
+      name: "dsdsoe",
+      pin: "123456",
+      phone: 1234567890,
+      locationName: "Example Location",
+    };
+
+    console.log("cart form 518(addressData)=>",addressData);
+    console.log("cart form 519(userId)=>",userId);
+
+    navigate("/add-address"); // Redirect to the add address page
+  };
+
+
+
+  return (
+    <div className="cart-container">
+      {/* Rest of the Cart component JSX */}
+      <ul className="cart-item-list">
+        {cartItems.map((item) => (
+          <li key={item.id} className="cart-item">
+            <img src={item.image} alt={item.title} />
+            <div className="cart-item-details">
+              <div className="cart-items-abc">
+                <h3 className="cart-item-title">{item.title}</h3>
+                <p className="cart-item-quantity">Quantity: {item.quantity}</p>
+              </div>
+
+              <div className="cart-item-packet">
+                <button onClick={() => handleDecreasePacket(item.id)}>-</button>
+                <span>{item.packet}</span>
+                <button onClick={() => handleIncreasePacket(item.id)}>+</button>
+              </div>
+              <p className="cart-item-total">Total: ${item.total}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="cart-summary">
+        <span className="cart-total">Total: ${total}</span>
+        <button className="checkout-button" onClick={handleCheckOut}>
+          Check Out
+        </button>
+        <button className="checkout-button" onClick={handleAddAddress}>
+          add address
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Cart;
+
+
+//checkout.js
+
+import React, { useState, useEffect, useReducer } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {handleOrder, addAddress, getUserAddress, loginFail,addToCustomerCarts, createRazorpayOrder } from "../redux/actions/userActions";
+import { useNavigate } from "react-router-dom";
+import './CheckOut.css'
+import { addToCart, addToCustomerCart } from "../redux/actions/cartAction";
+import axios from "axios";
+import BASE_URL from '../files/config'; // Adjust the import path as per your project structure
+
+const Checkout = () => {
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [orderId, setOrderId] = useState("");
+  const user = useSelector((state) => state.user);
+  const cart=useSelector((state)=>state.cart)
+  const cartItems = useSelector((state) => state.cart.cartItems);
+
+  const userAddresses = useSelector((state) => state.user.addresses);
+  console.log("user is ",user);
+  const authToken = user.token;
+console.log(authToken);
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+   
+    if (user && user.customer && user.customer._id) {
+      dispatch(getUserAddress(user.customer._id));
+    }else{
+     
+    }
+  }, [dispatch, user]);
+
+
+
+  const handleAddressChange  = (e) => {
+    setSelectedAddress(e.target.value);
+    console.log("selected addres is(handleChange) =>",e.target.value);
+  };
+  console.log("📌user.customer :",user.customer)
+  console.log("📌user.cartItems :",cartItems)
+
+  const handleCheckout = async () => {
+    
+      try {
+       
+        console.log("📌user.cartItems :",cartItems)
+        const cartItemData = cartItems.map((item) => ({
+          title: item.title,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+          packet: item.packet,
+          total: item.total,
+        }));
+     console.log("📌cartItemData(77)r :",cartItemData);
+        console.log(user);
+        console.log( user.customer._id);
+        dispatch(addToCustomerCart(user.customer._id, cartItemData));
+       
+      } catch (error) {
+        console.error("Error adding cart items to customer database:", error);
+      }
+    
+  };
+
+ 
+
+const cartTotal = cart.cartItems.reduce((total, item) => total + item.total, 0);
+
+
+
+const handlePayment=async()=>{
+  try {
+    const customerId=user.customer._id;
+    console.log(cartItems);
+    console.log(cartTotal);
+    
+    const orderResponse = await axios.post(
+      `${BASE_URL}/api/payments/orders`,{total:cartTotal}
+      
+    );
+    const orderData = orderResponse.data.data;
+    console.log(orderData);
+    console.log(orderResponse);
+
+    const options = {
+      key: "rzp_test_AudIy7hoBdJbPk",
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "Your Store Name",
+      description: "Payment for Your Order",
+      order_id: orderData.id,
+      handler: async (response) => {
+        try {
+         
+
+          const verifyResponse = await axios.post(
+            `${BASE_URL}/api/payments/verify`,
+            response
+          );
+          const verificationData = verifyResponse.data;
+          if (
+            verificationData.message === "Payment verified successfully"
+          ) {
+            console.log("Payment successful!");
+            const cartItemData = cartItems.map((item) => ({
+              title: item.title,
+              price: item.price,
+              image: item.image,
+              quantity: item.quantity,
+              packet: item.packet,
+              total: item.total,
+            }));
+            console.log("Response from cartItemData📌:", cartItemData);
+          
+              const cartTotal = cartItems.reduce(
+                (total, item) => total + item.total,
+                0
+              );
+              console.log(selectedAddress);
+              const sendOrderData = {
+                cartItems: cartItemData,
+                orderTotal: cartTotal,
+                address:selectedAddress
+              };
+             
+
+              dispatch(placeOrder(user.customer._id, sendOrderData));
+            navigate("/checkout/success"); 
+          } else {
+            navigate("/checkout/fail");
+            console.log("Payment verification failed!");
+           
+          }
+        } catch (error) {
+          console.error("Error verifying payment:", error);
+        }
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const rzp1 = new window.Razorpay(options);
+    rzp1.open();
+  } catch (error) {
+    
+  }
+}
+
+const handleRazorpaySuccess = (response) => {
+  console.log("Payment successful:", response);
+
+  navigate("/payment-success"); 
+};
+
+return (
+  <div className="checkout-container">
+  <h1>Checkout</h1>
+  <h2>Select an Address</h2>
+  {user.customer && user.customer.address && user.customer.address.length > 0 ? (
+    <select className="address-select" onChange={handleAddressChange}>
+      <option value="" disabled selected>
+        Select an Address
+      </option>
+      {user.customer.address.map((address, index) => (
+        <option key={index} value={address._id}>
+          {address.pin}
+        </option>
+      ))}
+    </select>
+  ) : (
+    <p>No addresses found.</p>
+  )}
+  <button className="confirm-button" onClick={handlePayment} onChange={(e)=>{
+    setSelectedAddress(e.target.value)
+    console.log("selected address is ==>",selectedAddress);
+  }}>
+    Confirm Checkout
+  </button>
+
+  <button className="confirm-button" onClick={handleCheckout} >
+   add cart
+  </button>
+
+</div>
+);
+};
+
+export default Checkout;
+
+//Navbar.js
+
+import React, { useEffect, useState } from "react";
+
+import "./Navbar.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCartShopping, faPerson } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
+import { useDispatch,useSelector } from "react-redux";
+import { getAllCart } from "../redux/actions/cartAction";
+
+const Navbar = () => {
+  const dispatch=useDispatch()
+  const [showDropDown, setShowDropDown]=useState(false)
+  const cartItems=useSelector((state)=>state.cart.cartItems)
+
+  const handleCart = () => {
+    
+    dispatch(getAllCart(cartItems))
+  
+  };
+  const toggleDropDown = () => {
+    setShowDropDown(!showDropDown);
+  };
+  const closeDropDown = () => {
+    setShowDropDown(false);
+  };
+
+  const handleLogout=()=>{
+    dispatch(logoutUser())
+    navigate('/login')
+    
+  }
+  return (
+    <div className="nav-container">
+      <div className="logo">
+        <h1>eggs</h1>
+      </div>
+      <div className="nav-menus">
+        <ul>
+          <Link to="/">
+            {" "}
+            <li>Home</li>
+          </Link>
+          <Link to="/products">
+            <li>Products</li>
+          </Link>
+          <Link to="/">
+            {" "}
+            <li>Contact </li>
+          </Link>
+          <Link to="/order-history">
+            {" "}
+            <li>Order History </li>
+          </Link>
+        </ul>
+      </div>
+      <div className="self-icon">
+        <Link className="cart-icon" to="/cart">
+          <FontAwesomeIcon icon={faCartShopping} onClick={handleCart} 
+          className="shoping-icon"/>
+          {cartItems ?
+          
+          <span className="cart-item-count">{cartItems.length} </span> : <span className="cart-item-count">0 </span>}
+        </Link>
+        <Link className="person-icon" >
+          
+          <FontAwesomeIcon icon={faPerson} />
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default Navbar;
+
+//productDetails.js
+
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
+import "./ProductDetails.css";
+import { useDispatch, useSelector } from "react-redux";
+import { addCart,addToCart, getAllCart } from "../redux/actions/cartAction";
+import { files } from "./Files";
+import BenifitsSection from "./BenifitsSection";
+import Footer from "./Footer";
+
+
+
+const ProductDetails = ({ products }) => {
+  const dispatch=useDispatch()
+  const { id } = useParams();
+  console.log("Type of id:", typeof id);
+
+  const productId = parseInt(id);
+  console.log("Type of productId:", typeof productId);
+  console.log("productId:",  productId);
+  const product = products.find((product) => product.id === productId);
+  const cartItems  = useSelector((state) => state.cart.cartItems);
+  console.log("cartItems",cartItems );
+  const [quantity, setQuantity] = useState(6);
+  const [packet, setPacket] = useState(1);
+
+  const handleQuantity = (value) => {
+    if (value >= 1 && value <= 30) {
+      setQuantity(value);
+    }
+  };
+
+  const handlePacket = (value) => {
+    if (value >= 1) {
+      setPacket(value);
+
+    }
+  };
+ 
+  const generateCartItemID = (productId, quantity) => {
+    return `${productId}_${quantity}`;
+  };
+
+
+  const handleCart = () => {
+    dispatch(addToCart(product, quantity, packet, cartItems));
+   
+    console.log("Added to cart");
+  };
+
+
+  
+
+  
+  
+  console.log("product is ",product);
+  // console.log(typeof product.id)
+  if (!product) {
+    return <div>Product not found</div>;
+  }
+
+  return (
+    <div className="productDetails-container">
+      <img src={files.eggBanner} />
+      
+    
+      <div className="productDetails-holder">
+        <div className="cart-image-price">
+          <div className="productDetails-photo">
+            <img src={product.image} alt="product-image" />
+          </div>
+          <span className="product-price">₹ {product.price} </span>
+          <span className="product-total">total: {product.price * quantity * packet} </span>
+        </div>
+
+        <div className="cartDetails">
+          <h1> {product.title} </h1>
+          <span> {product.title} </span>
+          <div className="product-qnty-option">
+            <p onClick={() => handleQuantity(6)}  
+              className={quantity === 6 ? 'selected' : ''}
+            >6</p>
+            <p onClick={() => handleQuantity(10)}
+              className={quantity === 10 ? 'selected' : ''} >10</p>
+            <p onClick={() => handleQuantity(25)} 
+            className={quantity === 25 ? 'selected' : ''}>25</p>
+            <p onClick={() => handleQuantity(30)} 
+            className={quantity === 30 ? 'selected' : ''}>30</p>
+          </div>
+          <div className="product-packet">
+            <p onClick={() => handlePacket(packet - 1)}>-</p>
+            <p>{packet}</p>
+            <p onClick={() => handlePacket(packet + 1)}>+</p>
+          </div>
+          <div className="cartPincode">
+            <input placeholder="enter pincode" />
+            <button>check</button>
+          </div>
+          <div className="addCart">
+            <button onClick={handleCart}>Add to cart</button>
+          </div>
+        </div>
+      </div>
+      <BenifitsSection/>
+      <Footer/>
+    </div>
+  );
+};
+
+export default ProductDetails;
+
+//Review.js
+import React, { useState } from "react";
+import { files } from "./Files";
+
+import "./Review.css";
+
+const Review = () => {
+  const reviews = [
+    {
+      id: 1,
+      name: "John Doe1",
+      comment:
+        "These eggs are delicious and fresh!The best eggs I hresh!The best eggs I have ever tasted!",
+      rating: 5,
+      image: files.shraddha,
+    },
+    {
+      id: 2,
+      name: "Jane Smith2",
+      comment:
+        "The best eggs I have ever tasted!The best eggs I have ever tasted!",
+      rating: 4.5,
+      image: files.ana,
+    },
+    {
+      id: 7,
+      name: "Jane Smith3",
+      comment:
+        "The best eggs I have ever tasted!The best eggs I have ever tasted!",
+      rating: 4,
+      image: files.isha,
+    },
+    {
+      id: 3,
+      name: "Jake Johnson4",
+      comment: "Highly recommended eggs!",
+      rating: 5,
+      image: files.alia,
+    },
+    {
+      id: 4,
+      name: "Alexdra Williams5",
+      comment: "These eggs are excellent!",
+      rating: 4,
+      image: files.shraddha,
+    },
+
+    {
+      id:5,
+      name: "labanya",
+      comment: "These eggs are excellent!",
+      rating: 4,
+      image: files.shraddha,
+    },{
+      id: 6,
+      name: "shreya",
+      comment: "These eggs are excellent6!",
+      rating: 4,
+      image: files.shraddha,
+    },
+  ];
+
+  const [startIndex, setStartIndex] = useState(0);
+
+  const handleNext = () => {
+    if (startIndex + 3 < reviews.length) {
+      setStartIndex(startIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (startIndex > 0) {
+      setStartIndex(startIndex - 1);
+    }
+  };
+
+  return (
+    
+    <>
+      <div className="review-container">
+        <div className="Testimonial">
+          <div className="Testimonial-h">
+            <h1>Testimonials</h1>
+            <span>Hear from our extraordinary customers</span>
+          </div>
+
+          
+
+          <div className="arrow-container">
+            <button className="arrow-button" onClick={handlePrev}>
+              &lt;
+            </button>
+
+            <button className="arrow-button" onClick={handleNext}>
+              &gt;
+            </button>
+          </div>
+        </div>
+
+
+        {reviews.slice(startIndex, startIndex + 3).map((review) => (
+            
+        
+            <div className="review-holder" key={review.id}>
+            <div className="review-comment">
+              <span> {review.comment} </span>
+            </div>
+            <div className="review-profile">
+              <div className="review-photo">
+                <img src={review.image} />
+              </div>
+              <div className="Name">
+                <span>{review.name}</span>
+                {/* <span>{review.rating} </span> */}
+
+                <div className="review-rating">
+                  {Array.from({ length: review.rating }, (_, index) => (
+                    <span key={index}>&#9733;</span> // Unicode character for star symbol
+                  ))}
+
+                 
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          
+        ))}
+      </div>
+    </>
+  );
+};
+
+export default Review;
+
+
+//App.js 
+
+import './App.css';
+import Home from './components/Home';
+import ProductDetails from './components/ProductDetails';
+import ProductContainer, { products } from './components/ProductContainer'; // Import the products array here
+
+import { Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Cart from './components/Cart';
+import Login from './components/Login';
+import CheckOut from './components/CheckOut';
+import AddressForm from './components/AddressForm';
+
+
+function App() {
+  return (
+    <div className="App">
+      <Navbar/>
+      <Routes>
+        <Route exact path="/" element={<Home />} />
+        <Route exact path="/products" element={<ProductContainer />} />
+        <Route exact path="/login" element={<Login />} />
+        <Route path="/product/:id" element={<ProductDetails products={products} />} /> {/* Pass the products array as a prop */}
+        <Route path="/cart" element={<Cart />} /> {/* Pass the products array as a prop */}
+        <Route path="/checkout" element={<CheckOut />} /> {/* Pass the products array as a prop */}
+        <Route path="/add-address" element={<AddressForm/>} /> {/* Pass the products array as a prop */}
+      </Routes>
+    </div>
+  );
+}
+
+export default App;

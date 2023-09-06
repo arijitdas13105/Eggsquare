@@ -1,0 +1,76 @@
+.footer-container {
+    background-color: #f8f7c5;
+    padding: 30px;
+    display: flex;
+    justify-content: space-around;
+    /* align-items: center; */
+    border: 2px solid black;
+  }
+  .quick-link{
+    display: flex;
+    flex-direction: column;
+    /* border: 2px solid black; */
+    padding: 0;
+    margin: 0;
+  }
+  .quick-link ul {
+    list-style: none;
+   
+    padding: 0;
+    
+  }
+  
+  .quick-link li {
+    /* margin-right: 20px; */
+  }
+  
+  .contact-us {
+    display: flex;
+    flex-direction: column;
+    /* border: 2px solid red; */
+    
+  }
+  
+  .contact-number,
+  .contact-email {
+    display: flex;
+    align-items: center;
+    /* margin-bottom: 10px; */
+  }
+  
+  .contact-number svg,
+  .contact-email svg {
+    margin-right: 10px;
+  }
+  
+  .submit-message {
+    display: flex;
+    flex-direction: column;
+    /* border: 1px solid blue; */
+  }
+  
+  .submit-message input,
+  .submit-message textarea {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .submit-message textarea {
+    height: 100px;
+  }
+  
+  .submit-message button {
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .submit-message button:hover {
+    background-color: #0056b3;
+  }
+  

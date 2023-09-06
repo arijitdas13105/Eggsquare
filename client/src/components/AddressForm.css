@@ -1,0 +1,156 @@
+
+
+
+/* //------------------------------------------------ */
+
+/* AddressForm.css */
+/* 
+.address-form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff; 
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 100px;
+}
+
+.address-form-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333; 
+}
+
+.form-group {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #f5f5f5; 
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.button-container button {
+  padding: 12px 30px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: bold; 
+}
+
+.button-container button:hover {
+  background-color: #0056b3;
+}
+
+.button-container button.flat-button {
+  padding: 12px 30px;
+  background-color: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.button-container button.flat-button:hover {
+  background-color: #007bff;
+  color: white;
+} */
+
+/* //------------------------------------------------ */
+/* AddressForm.css */
+
+.address-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 100px auto;
+    max-width: 500px;
+  
+  }
+  
+  .address-form-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 400;
+    /* text-decoration: underline; */
+  }
+  
+  .form-group {
+    width: 100%;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    gap: 0px;
+    justify-content: flex-start;
+
+  }
+   .form-group label{
+    padding: 0;margin: 0;
+   }
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .form-group input::placeholder {
+    color: #999;
+    /* font-size: 12px; */
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+   button {
+    padding: 8px 30px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+  }
+  
+  
+  
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
