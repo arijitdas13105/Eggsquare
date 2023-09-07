@@ -5,13 +5,9 @@ const {
   LOGIN_FAILURE,
   GET_ADDRESS,
   ADD_ADDRESS,ADD_TO_CUSTOMER_CART,
-  CREATE_RAZORPAY_ORDER_SUCCESS,
-  CREATE_RAZORPAY_ORDER_FAILURE,
-  CREATE_RAZORPAY_ORDER_REQUEST,
   GET_USER_ORDER_HISTORY_SUCCESS,LOGOUT_USER
 } = require("../constants/allContants");
 
-// LOGIN_SUCCESS,LOGIN_FAILURE
 
 const initialState = {
   token: null,
@@ -65,27 +61,6 @@ export const userReducer = (state = initialState, action) => {
       }   
 
 
-      case CREATE_RAZORPAY_ORDER_REQUEST:
-      return {
-        ...state,
-        createRazorpayOrderLoading: true,
-        createRazorpayOrderError: null,
-      };
-
-    case CREATE_RAZORPAY_ORDER_SUCCESS:
-      return {
-        ...state,
-        createRazorpayOrderLoading: false,
-        razorpayOrder: action.payload,
-      };
-
-    case CREATE_RAZORPAY_ORDER_FAILURE:
-      return {
-        ...state,
-        createRazorpayOrderLoading: false,
-        createRazorpayOrderError: action.payload,
-      };
-
     case GET_USER_ORDER_HISTORY_SUCCESS:
       return{
         ...state,
@@ -97,4 +72,3 @@ export const userReducer = (state = initialState, action) => {
       return state;
   }
 };
-

@@ -12,9 +12,6 @@ import {
   GET_ADDRESS,
   ADD_ADDRESS,
   ADD_TO_CUSTOMER_CART,
-  CREATE_RAZORPAY_ORDER_SUCCESS,
-  CREATE_RAZORPAY_ORDER_FAILURE,
-  CREATE_RAZORPAY_ORDER_REQUEST,
   GET_USER_ORDER_HISTORY_SUCCESS,
   LOGOUT_USER,
 } from "../constants/allContants";
@@ -41,6 +38,7 @@ export const LoginAction = (email, password) => async (dispatch) => {
     });
 
     const { tokens, customer } = response.data;
+
     dispatch(loginSuccess(tokens, customer));
 
     localStorage.setItem("token", tokens);
@@ -115,7 +113,8 @@ export const getUserAddress = (userId) => async (dispatch) => {
   }
 };
 
-export const addToCustomerCarts =(userId, cartItemData) => async (dispatch) => {
+export const addToCustomerCarts =
+  (userId, cartItemData) => async (dispatch) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/customer/${userId}/addCartItem`,
@@ -123,123 +122,14 @@ export const addToCustomerCarts =(userId, cartItemData) => async (dispatch) => {
       );
       dispatch({
         type: ADD_TO_CUSTOMER_CART,
-        payload: cartItemData, // assuming cartItemData contains the updated cart items
+        payload: cartItemData,
       });
     } catch (error) {
       console.error("Error adding cart items to customer database:", error);
     }
   };
 
-export const createRazorpayOrder =(userId, cartItemData) => async (dispatch) => {
-    try {
-      const cartTotal = cartItemData.reduce(
-        (total, item) => total + item.total,
-        0
-      );
-      const authToken = localStorage.getItem("token");
-      const orderResponse = await axios.post(
-        `${BASE_URL}/api/customer/${userId}/createOrder`,
-        { cartItems: cartItemData },
-        {
-          headers: {
-            Authorization: authToken, 
-          },
-        }
-      );
-      const order_id = orderResponse.data.order_id;
-      const options = {
-        key: "rzp_test_AudIy7hoBdJbPk",
-        amount: cartTotal * 100,
-        currency: "INR",
-        name: "Your Store",
-        description: "Test Transaction",
-        order_id: order_id,
-        handler: async (response) => {
-          try {
-            const verifyResponse = await axios.post(
-              `${BASE_URL}/api/customer/${userId}/verify`,
-              response
-            );
-
-            dispatch(addToCustomerCarts(userId, cartItemData));
-          } catch (error) {
-            console.log("Error verifying payment:", error);
-          }
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Error creating Razorpay order:", error);
-    }
-  };
-
-export const createRazorpayOrderSuccess = (order) => {
-  return {
-    type: CREATE_RAZORPAY_ORDER_SUCCESS,
-    payload: order,
-  };
-};
-
-export const createRazorpayOrderFailure = (error) => {
-  return {
-    type: CREATE_RAZORPAY_ORDER_FAILURE,
-    payload: error,
-  };
-};
-
-export const createRazorpayOrderRequest = () => ({
-  type: CREATE_RAZORPAY_ORDER_REQUEST,
-});
-
-export const handleOrder = (userId, cartItemData) => async (dispatch) => {
-  try {
-    const cart = useSelector((state) => state.cart);
-    const orderResponse = await axios.post(
-      `${BASE_URL}/api/customer/${userId}/create-razorpay-order`,
-      { cartItems: cartItemData }
-    );
-    const order_id = orderResponse.data.data.id;
-    const cartTotal = cart.cartItems.reduce(
-      (total, item) => total + item.total,
-      0
-    );
-
-    const options = {
-      key: "rzp_test_AudIy7hoBdJbPk",
-      amount: cartTotal * 100,
-      currency: "INR",
-      name: "Your Store",
-      description: "Test Transaction",
-      order_id: order_id,
-      handler: async (response) => {
-        try {
-          const verifyResponse = await axios.post(
-            `${BASE_URL}/api/customer/${userId}/verify`,
-            response
-          );
-
-          dispatch(addToCustomerCarts(userId, cartItemData));
-        } catch (error) {
-          console.log("Error verifying payment:", error);
-        }
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (error) {
-    console.log("Error handling checkout:", error);
-  }
-};
-
+//for storing in order history
 export const placeOrder = (userId, orderData) => async (dispatch) => {
   try {
     const authToken = localStorage.getItem("token");
@@ -263,7 +153,6 @@ export const getAddress = (userId) => async (dispatch) => {
     const authToken = localStorage.getItem("token");
     const config = {
       headers: {
-        // Authorization: `Bearer ${authToken}`,
         Authorization: authToken,
       },
     };
@@ -271,7 +160,7 @@ export const getAddress = (userId) => async (dispatch) => {
       `${BASE_URL}/api/customer/${userId}/alladdress`,
       {
         headers: {
-          Authorization: authToken,
+          Authorization: authToken, // Include the token in the request headers
         },
       }
     );

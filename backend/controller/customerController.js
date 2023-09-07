@@ -1,7 +1,9 @@
 //CustomerController.js
+
 const Customer = require("../models/customerModel");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("../cconfig/authMiddleware");
+//register  customer
 
 exports.registerCustomer = async (req, res) => {
   try {
@@ -9,7 +11,7 @@ exports.registerCustomer = async (req, res) => {
     let customer = await Customer.findOne({ email });
 
     if (customer) {
-      return res.status(400).json({ error: "Already exists" });
+      return res.status(400).json({ error: "already exist" });
     }
 
     customer = new Customer({ email, password });
@@ -22,6 +24,8 @@ exports.registerCustomer = async (req, res) => {
   }
 };
 
+//login customer
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -33,23 +37,29 @@ exports.login = async (req, res) => {
     }
 
     if (customer.password !== password) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(401).json({ error: "invalid password" });
     }
-    const token = jwt.sign({ customerId: customer._id }, process.env.JWT_SECRET);
-    res.status(200).json({ success: true, customer, tokens: token });
+    const token = jwt.sign(
+      { customerId: customer._id },
+      process.env.JWT_SECRET
+    );
+    res.status(200).json({ success: true, customer: customer, tokens: token });
   } catch (error) {
     console.error("Error in loginCustomer:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
+// Controller for adding a new address to customer's address list
 exports.addAddress = async (req, res) => {
   try {
     const customerId = req.params.id;
     const { name, pin, phone, locationName, landMark, flatNo } = req.body;
 
     if (req.customerId !== customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
 
     const customer = await Customer.findById(customerId);
@@ -64,10 +74,10 @@ exports.addAddress = async (req, res) => {
 
     res.json({ message: "Address added successfully", customer });
   } catch (error) {
+    console.error("Error in addAddress:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
-
 
 exports.updateAddress = async (req, res) => {
   try {
@@ -75,21 +85,20 @@ exports.updateAddress = async (req, res) => {
     const addressId = req.params.addressId;
 
     if (req.customerId !== customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
 
     const customer = await Customer.findById(customerId);
-
     if (!customer) {
       return res.status(404).json({ error: "Customer not found" });
     }
 
     const addressToUpdate = customer.address.id(addressId);
-
     if (!addressToUpdate) {
       return res.status(404).json({ error: "Address not found" });
     }
-
     addressToUpdate.name = req.body.name;
     addressToUpdate.pin = req.body.pin;
     addressToUpdate.phone = req.body.phone;
@@ -105,12 +114,14 @@ exports.updateAddress = async (req, res) => {
   }
 };
 
+// Controller for fetching all addresses of a customer
 exports.getAddress = async (req, res) => {
   try {
     const customerId = req.params.id;
-
     if (req.customerId !== customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
 
     const customer = await Customer.findById(customerId);
@@ -128,17 +139,20 @@ exports.getAddress = async (req, res) => {
   }
 };
 
+// addCart
+
 exports.addCartItem = async (req, res) => {
   try {
     const customerId = req.params.id;
     const cartItemData = req.body;
 
     if (req.customerId !== customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
 
     const customer = await Customer.findById(customerId);
-
     if (!customer) {
       return res.status(404).json({ error: "Customer not found" });
     }
@@ -157,7 +171,6 @@ exports.addCartItem = async (req, res) => {
     ) {
       return res.status(400).json({ error: "Invalid cartItemData format" });
     }
-
     customer.cartItems = [];
 
     cartItemData.forEach((item) => {
@@ -170,7 +183,6 @@ exports.addCartItem = async (req, res) => {
         total: item.total,
       });
     });
-
     await customer.save();
 
     res.json({
@@ -183,7 +195,6 @@ exports.addCartItem = async (req, res) => {
   }
 };
 
-
 exports.placeOrder = async (req, res) => {
   try {
     const customerId = req.params.id;
@@ -191,9 +202,10 @@ exports.placeOrder = async (req, res) => {
 
     const customer = await Customer.findById(customerId);
     const selectedAddress = customer.address.id(address);
-
     if (req.customerId != customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
 
     const orderItem = cartItems.map((item) => ({
@@ -204,14 +216,12 @@ exports.placeOrder = async (req, res) => {
       packet: item.packet,
       total: item.total,
     }));
-
     const order = {
       items: cartItems,
       orderTotal: orderTotal,
       addressName: selectedAddress,
-      orderStatus: status
+      orderStatus: status,
     };
-
     if (customer) {
       customer.orders.push(order);
       await customer.save();
@@ -223,21 +233,20 @@ exports.placeOrder = async (req, res) => {
   }
 };
 
-
 exports.getUserOrder = async (req, res) => {
   try {
     const customerId = req.params.id;
-
     if (req.customerId !== customerId) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
-
     const customer = await Customer.findById(customerId);
-
     if (!customer) {
-      return res.status(401).json({ error: "Unauthorized, invalid customerId" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
     }
-
     const orderHistory = customer.orders;
     res.json(orderHistory);
   } catch (error) {

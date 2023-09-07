@@ -9,13 +9,13 @@ app.use(cors())
 app.use(express.json())
 app.use(cors({origin:'*'}))
 
-// app.use('/api/order',require('./routes/orderRoute'))
 
-const port=process.env.PORT ||5000
+const port=process.env.PORT||5000;
 const customerRoute= require('./routes/customerRoute')
 const orderRoute= require('./routes/orderRoute')
 const adminRoute= require('./routes/adminRoute')
-mongoose.connect('mongodb+srv://arijitdasofficial05:FekwKsMxgNZDO7iA@cluster0.w35zck2.mongodb.net/',{
+const mongoURI=process.env.MONGODB_URI
+mongoose.connect(mongoURI,{
 
 
     useNewUrlParser: true,
