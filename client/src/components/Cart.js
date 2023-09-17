@@ -11,10 +11,14 @@ import {
   increasePacket,
   decreasePacket,
   addToCustomerCart,
-  addCart,
+  addCart,REMOVE_FROM_CART
 } from "../redux/actions/cartAction";
-import { addAddress, getUserAddress } from "../redux/actions/userActions";
+import { addAddress, getUserAddress, } from "../redux/actions/userActions";
+import {removeFromCart } from "../redux/actions/cartAction";
 import "./Cart.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import { faCartShopping, faPerson, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
@@ -61,9 +65,41 @@ const Cart = () => {
     updateLocalStorageCartItems(updatedCartItems);
   };
 
+  // const handleDecreasePacket = (itemId) => {
+  //   dispatch(decreasePacket(itemId));
+  //   const updatedCartItems = cartItems.map((item) =>
+  //     item.id === itemId
+  //       ? {
+  //           ...item,
+  //           packet: item.packet - 1,
+  //           total: item.price * item.quantity * (item.packet - 1),
+  //         }
+  //       : item
+  //   );
+  //   updateLocalStorageCartItems(updatedCartItems);
+  // };
+
   const handleDecreasePacket = (itemId) => {
-    dispatch(decreasePacket(itemId));
+    const itemToUpdate = cartItems.find((item) => item.id === itemId);
+  
+    // Check if the item's packet count is greater than 0 before decreasing it
+    if (itemToUpdate && itemToUpdate.packet > 1) {
+      dispatch(decreasePacket(itemId));
+  
+      // Update the local storage as well
+      const updatedCartItems = cartItems.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              packet: item.packet - 1,
+              total: item.price * item.quantity * (item.packet - 1),
+            }
+          : item
+      );
+      updateLocalStorageCartItems(updatedCartItems);
+    }
   };
+  
 
   const total = cartItems.reduce((accumulator, item) => {
     return accumulator + item.total;
@@ -82,9 +118,24 @@ const Cart = () => {
   const handleAddAddress = () => {
     navigate("/add-address");
   };
-
+  const handleRemoveItem = (itemId) => {
+    dispatch(removeFromCart(itemId));
+    const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
+    updateLocalStorageCartItems(updatedCartItems);
+    toast('🗑️ Item removed from Cart!', {
+      position: "top-right",
+      autoClose:1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
   return (
     <div className="cart-container">
+      <ToastContainer />
       <div className="cart-holder">
         <ul className="cart-item-list">
           {cartItems.map((item) => (
@@ -106,6 +157,12 @@ const Cart = () => {
                   <button onClick={() => handleIncreasePacket(item.id)}>
                     +
                   </button>
+           
+            <FontAwesomeIcon style={{color:"red"}} icon={faTrash} onClick={() => handleRemoveItem(item.id)} />
+            
+
+                  {/* <button onClick={() => handleRemoveItem(item.id)}>🗑️</button> Delete button */}
+                  {/* <button onClick={() => handleRemoveItem(item.id)}>🗑️</button> Delete button */}
                 </div>
                 <div className="cart-item-total-holder">
                   <p className="cart-item-total">Total: ₹{item.total}</p>

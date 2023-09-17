@@ -12,7 +12,7 @@
   padding: 10px 20px;
   z-index: 999;
   border-bottom: 1px solid #ddd;
-  height: 60px; /* Increase the height for better visibility */
+  height: 60px; 
   margin: 0;
   padding: 10px;
 
@@ -52,7 +52,7 @@
 
 .nav-menus li a {
   text-decoration: none;
-  color: inherit; /* Inherit the color from the parent element */
+  color: inherit; 
 }
 
 .nav-menus li:hover {
@@ -61,10 +61,10 @@
 
 .self-icon {
   display: flex;
-  gap: 10px; /* Reduced the gap for closer alignment */
+  gap: 10px;
   font-size: 20px;
-  align-items: center; /* Center the cart item count vertically */
-  position: relative; /* To position the cart item count */
+  align-items: center; 
+  position: relative;
   justify-content: space-around;
   margin: 0px 20px;
   padding: 0;
@@ -104,7 +104,6 @@
   z-index: 1000;
 }
 
-/* Dropdown menu list item styles */
 .dropdown-menu li {
   list-style: none;
   padding: 0;
@@ -119,17 +118,15 @@ a {
   text-decoration: none;
 }
 
-/* Dropdown menu list item hover styles */
 .dropdown-menu li:hover {
   color: #555;
 }
 
-/* Additional styles for responsiveness */
 @media screen and (max-width: 768px) {
   .nav-container {
     padding: 10px;
     display: flex;
-    justify-content: space-between; /* Ensure the menu icon is on the right */
+    justify-content: space-between; 
   }
 
   .nav-menus ul {
@@ -174,13 +171,21 @@ a {
     display: block; /* Initially shown */
   }
 
-  /* Style for the menu when it's hidden */
   .hide-menu ul {
     display: none;
   }
 
-  /* Style for the menu when it's shown */
   .show-menu ul {
     display: flex;
   }
+
+  .logo {
+    font-size: auto;
+    font-weight: bold;
+    color: #222;
+    
+  }
+  
+  
+  
 }

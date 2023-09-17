@@ -7,13 +7,13 @@ const ProductContainer = () => {
   const products = [
     {
       id: 1,
-      title: "white_egg",
-      image: files.brown_egg,
+      title: "WHITE EGG",
+      image: files.white_egg2,
       price: 20,
     },
     {
       id: 2,
-      title: "brown_egg",
+      title: "BROWN EGG",
       image: files.brown_egg,
       price: 22,
     },
@@ -39,7 +39,7 @@ export const products = [
   {
     id: 1,
     title: "white egg",
-    image: files.brown_egg,
+    image: files.white_egg2,
     price: 20,
   },
   {

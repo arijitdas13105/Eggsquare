@@ -1,6 +1,6 @@
 //productDetails
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./ProductDetails.css";
 import { useDispatch, useSelector } from "react-redux";
 import { addCart, addToCart, getAllCart } from "../redux/actions/cartAction";
@@ -11,6 +11,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetails = ({ products }) => {
+  const navigate=useNavigate()
   const dispatch = useDispatch();
   const { id } = useParams();
   console.log("Type of id:", typeof id);
@@ -22,7 +23,10 @@ const ProductDetails = ({ products }) => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   console.log("cartItems", cartItems);
   const [quantity, setQuantity] = useState(6);
+  const [enterPincode,setEnterPincode]=useState("")
+  const [pinChecked,setPinChecked]=useState("")
   const [packet, setPacket] = useState(1);
+  const specificPinCodes = ["474015", "474011"];
 
   const handleQuantity = (value) => {
     if (value >= 1 && value <= 30) {
@@ -41,13 +45,62 @@ const ProductDetails = ({ products }) => {
   };
 
   const handleCart = () => {
-    dispatch(addToCart(product, quantity, packet, cartItems));
-    toast.success("Item added to cart", {
-      position: "bottom-right",
-      autoClose: 2000,
-    });
-  };
 
+    if(!pinChecked){
+      toast.warning("Please check the pin code first!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }else{
+ dispatch(addToCart(product, quantity, packet, cartItems));
+    
+    toast('🦄 Item added to Cart!', {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+      setTimeout(() => {
+        navigate("/cart");
+      }, 3000); 
+    }
+   
+    };
+const hadnlePinChange=(e)=>{
+setEnterPincode(e.target.value)
+}
+const checkPincode=()=>{
+  if(specificPinCodes.includes(enterPincode)){
+    toast.success("Pin code is available!", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+
+    setPinChecked(true)
+  }else{
+    toast.error("Pin code is not available!", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    setPinChecked(false)
+  }
+}
   if (!product) {
     return <div>Product not found</div>;
   }
@@ -103,8 +156,8 @@ const ProductDetails = ({ products }) => {
             <p onClick={() => handlePacket(packet + 1)}>+</p>
           </div>
           <div className="cartPincode">
-            <input placeholder="enter pincode" />
-            <button>check</button>
+            <input placeholder="enter pincode" value={enterPincode}onChange={hadnlePinChange}/>
+            <button onClick={checkPincode}>check</button>
           </div>
           <div className="addCart">
             <button onClick={handleCart}>Add to cart</button>

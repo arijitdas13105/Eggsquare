@@ -7,11 +7,16 @@ const Hero = () => {
     <div className="hero-container">
       <div className="hero-left">
         <div>
-          <h1>egg that stand out</h1>
+          <h1>Your Source of Eggcellence</h1>
         </div>
         <div>
-          <span>Nutrition that empowers you</span>
+          <span>Nutrition that empowers you  <br/>
+          {/* Quality You Can Trust */}
+          </span>
         </div>
+        {/* <div className="logo-hero">
+          <img src={files.eggSqaure1} alt="logo"/>
+        </div> */}
       </div>
       <div className="video-container">
         <video autoPlay loop muted>

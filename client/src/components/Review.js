@@ -7,55 +7,55 @@ const Review = () => {
   const reviews = [
     {
       id: 1,
-      name: "John Doe1",
+      name: "Arjun Singh",
       comment:
-        "These eggs are delicious and fresh!The best eggs I hresh!The best eggs I have ever tasted!",
+        "Egg Square exceeds expectations with premium eggs and hassle-free delivery. Exceptional quality and service every time!",
       rating: 5,
-      image: files.shraddha,
+      image: files.arjun,
     },
     {
       id: 2,
-      name: "Jane Smith2",
+      name: "labanya",
       comment:
-        "The best eggs I have ever tasted!The best eggs I have ever tasted!",
+        "I can't get enough of Egg Square's eggs! Their delivery service is punctual, making it a delightful experience",
       rating: 4.5,
       image: files.ana,
     },
     {
       id: 7,
-      name: "Jane Smith3",
+      name: "Vikas Chauhan",
       comment:
-        "The best eggs I have ever tasted!The best eggs I have ever tasted!",
+        "I'm blown away by Egg Square's egg quality and delivery efficiency. A truly delightful experience every time.",
       rating: 4,
-      image: files.isha,
+      image: files.vikash,
     },
     {
       id: 3,
-      name: "Jake Johnson4",
-      comment: "Highly recommended eggs!",
+      name: "Deepak Tomar",
+      comment: "Outstanding experience with Egg Square! Eggs are consistently fresh, and their delivery service is efficient and convenient",
       rating: 5,
-      image: files.alia,
+      image: files.deepak,
     },
     {
       id: 4,
-      name: "Alexdra Williams5",
-      comment: "These eggs are excellent!",
+      name: "Kavita Dubey",
+      comment: "Egg Square sets the bar high for egg quality and delivery. I'm a loyal customer, thanks to their exceptional service",
       rating: 4,
-      image: files.shraddha,
+      image: files.kavita,
     },
 
     {
       id:5,
-      name: "labanya",
-      comment: "These eggs are excellent!",
+      name: "Vikram Verma",
+      comment: "I've never had such consistently excellent eggs! Egg Square's delivery is fast and reliable. Highly recommended!",
       rating: 4,
-      image: files.shraddha,
+      image: files.vikram,
     },{
       id: 6,
-      name: "shreya",
-      comment: "These eggs are excellent6!",
+      name: "Nidhi Jain",
+      comment: "Egg Square's eggs are unbeatable in quality, and their delivery is seamless. They've won my trust and my taste buds",
       rating: 4,
-      image: files.shraddha,
+      image: files.nidhi,
     },
   ];
 

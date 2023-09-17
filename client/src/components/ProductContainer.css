@@ -16,3 +16,21 @@
     
   }
   
+  @media screen and (max-width: 768px) {
+    .product-container {
+      /* border: 1px solid green; */
+      margin: 10px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+     
+      padding: 1rem;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+     /*  align-items: center; */
+      justify-content: center;
+      /* padding: 0; */
+      
+    }
+
+  }

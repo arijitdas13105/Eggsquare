@@ -110,7 +110,13 @@
     margin: 0;
     gap: 0px;
     justify-content: flex-start;
+    align-items: flex-start;
+    /* border: 1px solid red; */
+  
 
+  }
+  .labels{
+    padding: 0;margin: 0;
   }
    .form-group label{
     padding: 0;margin: 0;

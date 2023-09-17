@@ -6,7 +6,7 @@ import {
   CART_ADD,
   ALL_CART,
   PACKET_INCREASE,
-  PACKET_DECREASE,
+  PACKET_DECREASE,REMOVE_CART_ITEM
 } from "../constants/allContants";
 
 const initialState = {
@@ -55,6 +55,15 @@ export const cartReducer = (state = initialState, action) => {
         ),
       };
 
+    case REMOVE_CART_ITEM:
+      const itemIdToRemove = action.payload;
+      const updatedCartItems = state.cartItems.filter(
+        (item) => item.id !== itemIdToRemove
+      );
+      return {
+        ...state,
+        cartItems: updatedCartItems,
+      };
     default:
       return state;
   }

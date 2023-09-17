@@ -5,7 +5,9 @@
     border-top: 1px solid rgb(245, 189, 189);
   }
   
-  .product-benefits,
+  .product-benefits{
+    flex:1;
+  }
   .product-nutrition {
     flex: 1;
   }
@@ -40,6 +42,7 @@
   }
   .product-nutrition{
     /* border: 2px solid red; */
+    flex: 1;
     justify-content: center;
     align-items: center;
   }
@@ -67,8 +70,101 @@
 
   @media screen and (max-width: 768px) {
     .product-benefit-nutrition{
-      gap: 2px;
+      gap: 0px;
      margin: 0;
      margin-top: 20px;
+     
+     /* border: 1px solid red; */
+     margin: 0;padding: 0;
+     justify-content: center;
+     align-items: center;
+     border-bottom: 1px solid rgb(210, 210, 243);
     }
+
+    
+  
+  .product-benefits{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;margin: 0;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px solid black; */
+    /* border-right: 1px solid rgb(210, 210, 243); */
+  }
+  
+  
+  .product-benefits h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    /* margin: 0;
+    padding: 0; */
+  }
+  .product-nutrition h2{
+    font-size: 20px;
+    margin-bottom: 10px;
+    /* margin: 0;
+    padding: 0; */
+  }
+  .product-benefits ul {
+    list-style-type: none;
+    /* padding: 0;margin: 0; */
+  }
+  
+  .product-benefits li {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 1px;
+    /* margin: 0;
+    padding: 0; */
+  }
+  
+  .product-benefits li::before {
+    content: "•";
+    color: #007bff; /* Bullet point color */
+    font-size: 18px;
+    margin-right: 10px;
+    /* margin: 0;padding: 0; */
+  }
+  
+  .product-benefits li span {
+    font-size: 16px;
+    line-height: 1.5;
+    /* margin: 0;padding: 0; */
+  }
+  .product-nutrition{
+    flex: 1;
+    display: flex;
+    /* border: 2px solid blue; */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    /* margin: 0;padding: 0; */
+    
+  }
+  .nutrition-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    /* width: 50%; */
+    padding: 0 15px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    /* margin: 0;padding: 0; */
+    /* border: 1px solid blue; */
+  }
+  
+  .product-nutrition .nutrition-item span {
+    font-size: 15px;
+    /* margin: 0;padding: 0; */
+  }
+  
+  .product-nutrition .nutrition-item span:last-child {
+    font-weight: bold;
+    /* margin: 0;padding: 0; */
+  }
   }

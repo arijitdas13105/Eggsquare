@@ -10,7 +10,7 @@ import {
   PACKET_INCREASE,
   PACKET_DECREASE,
   CREATE_RAZORPAY_ORDER_SUCCESS,
-  CREATE_RAZORPAY_ORDER_FAILURE,
+  CREATE_RAZORPAY_ORDER_FAILURE,REMOVE_CART_ITEM
 } from "../constants/allContants";
 import { placeOrder } from "./userActions";
 
@@ -95,3 +95,16 @@ export const addToCustomerCart = (userId, cartItemData) => async (dispatch) => {
     console.error("Error adding cart items to customer database:", error);
   }
 };
+
+
+export const removeFromCart=(itemId)=>{
+  return (dispatch,getState)=>{
+    const {cart}=getState()
+    const updatedCartItems = cart.cartItems.filter((item) => item.id !== itemId);
+    localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+    dispatch({
+      type:REMOVE_CART_ITEM,
+      payload:itemId
+    })
+  }
+}

@@ -16,7 +16,27 @@
     text-align: center;
   
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
    
+}
+.logo-hero{
+  width: 150px;
+  height: 100px;
+  /* overflow: hidden; */
+  margin-bottom: 1rem;
+  /* border: 1px solid fuchsia; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.logo-hero img{
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  border-radius: 50%;
 }
 .hero-left > div {
     margin-bottom: 2rem;
@@ -50,6 +70,26 @@
     object-fit: cover; /* This will maintain the video's aspect ratio while covering the container */
   }
   @media screen and (max-width: 768px) {
+    .logo-hero{
+      /* display: none; */
+      width: 150px;
+      height: 100px;
+      /* overflow: hidden; */
+      margin-bottom: 1rem;
+      /* border: 1px solid fuchsia; */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;padding: 0;
+    }
+    .logo-hero img{
+      /* display: none; */
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      border-radius: 50%;
+      margin: 0;padding: 0;
+    }
     .hero-container{
       display: flex;
       /* border: 5px solid yellow; */

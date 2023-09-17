@@ -55,6 +55,27 @@ export const logoutUser = () => {
   };
 };
 
+
+// export const registerUser = (userData) => async (dispatch) => {
+export const registerUser = (email,password) => async (dispatch) => {
+  try {
+    // Make an API request to your server to register the user
+    // const response = await axios.post(`${BASE_URL}/api/customer/register`, userData);
+    const response = await axios.post(`${BASE_URL}/api/customer/register`, {email,password});
+
+    // Dispatch a success action if registration is successful
+    dispatch({
+      type: "REGISTER_SUCCESS",
+      payload: response.data,
+    });
+  } catch (error) {
+    // Dispatch an error action if registration fails
+    dispatch({
+      type: "REGISTER_FAIL",
+      payload: error.response.data.error,
+    });
+  }
+};
 export const addAddress = (userId, addressData) => async (dispatch) => {
   try {
     const authToken = localStorage.getItem("token");

@@ -12,6 +12,7 @@ import CheckOut from "./components/CheckOut";
 import AddressForm from "./components/AddressForm";
 import OrderHistory from "./components/OrderHistory";
 import AdminPanel from "./components/AdminPanel";
+import Register from "./components/Register";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route exact path="/" element={<Home />} />
         <Route exact path="/products" element={<ProductContainer />} />
         <Route exact path="/login" element={<Login />} />
+        <Route exact path="/register" element={<Register/>} />
         <Route
           path="/product/:id"
           element={<ProductDetails products={products} />}

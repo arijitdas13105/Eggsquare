@@ -42,7 +42,10 @@ const Navbar = () => {
   return (
     <div className="nav-container">
       <div className="logo">
-        <h1>eggs</h1>
+        <Link to="/">
+        <h1 >eggSquare</h1>
+        </Link>
+        
       </div>
       <div className={`nav-menus ${showMenu ? 'show-menu' : 'hide-menu'}`}>
         <ul>
@@ -52,9 +55,9 @@ const Navbar = () => {
           <Link to="/products">
             <li>Products</li>
           </Link>
-          <Link to="/">
+          {/* <Link to="/">
             <li>Contact</li>
-          </Link>
+          </Link> */}
           <Link to="/order-history">
             <li>Order History</li>
           </Link>
