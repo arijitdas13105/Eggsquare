@@ -272,12 +272,10 @@ try {
         .json({ error: "Unauthorized, invalid customerId" });
     }
     if(!customer){
-      console.log("2nd",error)
       return res.status(404).json({ error: "Customer not found" });
     }
     // const orderToCancel=customer.orders.find((order)=>order._id==orderId)
     const orderToCancel = customer.orders.id(orderId);
-    console.log("first",orderToCancel)
     
     if(!orderToCancel){
       return res.status(404).json({ error: "Order not found" });
@@ -290,7 +288,6 @@ try {
     await customer.save()
     res.json({message:"order canceled suceesfully",order:orderToCancel})
   } catch (error) {
-    console.error("Error canceling order:", error);
     res.status(500).json({ error: "Server error" });
 }
 }
