@@ -55,7 +55,9 @@ exports.addAddress = async (req, res) => {
   try {
     const customerId = req.params.id;
     const { name, pin, phone, locationName, landMark, flatNo } = req.body;
+    console.log("first",customerId)
 
+    console.log("12nd",req.customerId)
     if (req.customerId !== customerId) {
       return res
         .status(401)
@@ -67,8 +69,11 @@ exports.addAddress = async (req, res) => {
     if (!customer) {
       return res.status(404).json({ error: "Customer not found" });
     }
+    const newAddress= {name, pin, phone, locationName, landMark, flatNo}
 
-    customer.address.push({ name, pin, phone, locationName, landMark, flatNo });
+    customer.address.push(newAddress);
+    // customer.address.push({ name, pin, phone, locationName, landMark, flatNo });
+    //  await customerAddress.save()
 
     await customer.save();
 
@@ -254,3 +259,38 @@ exports.getUserOrder = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+exports.cancelOrder=async(req,res)=>{
+try {
+    const customerId= req.params.id
+    const orderId= req.params.orderId
+    const customer= await Customer.findById(customerId)
+    
+    if (req.customerId != customerId) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, invalid customerId" });
+    }
+    if(!customer){
+      console.log("2nd",error)
+      return res.status(404).json({ error: "Customer not found" });
+    }
+    // const orderToCancel=customer.orders.find((order)=>order._id==orderId)
+    const orderToCancel = customer.orders.id(orderId);
+    console.log("first",orderToCancel)
+    
+    if(!orderToCancel){
+      return res.status(404).json({ error: "Order not found" });
+
+    }
+    if(orderToCancel.orderStatus ==="canceled"){
+      return res.status(400).json({ error: "Order is already canceled" });
+    }
+    orderToCancel.orderStatus="canceled"
+    await customer.save()
+    res.json({message:"order canceled suceesfully",order:orderToCancel})
+  } catch (error) {
+    console.error("Error canceling order:", error);
+    res.status(500).json({ error: "Server error" });
+}
+}

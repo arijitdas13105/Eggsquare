@@ -3,6 +3,7 @@ import React, { useState, useEffect, useReducer } from "react";
 
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
+import BASE_URL from "../../files/config";
 
 import {
   CART_ADD,
@@ -83,7 +84,8 @@ export const addToCustomerCart = (userId, cartItemData) => async (dispatch) => {
     const authToken = localStorage.getItem("token");
 
     const response = await axios.post(
-      `http://localhost:5000/api/customer/${userId}/addCartItem`,
+      // `http://localhost:5000/api/customer/${userId}/addCartItem`,
+      `${BASE_URL}/api/customer/${userId}/addCartItem`,
       cartItemData,
       {
         headers: {

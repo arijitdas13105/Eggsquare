@@ -11,6 +11,7 @@ router.post('/:id/addAddress', verifyToken, customerController.addAddress);
 router.put('/:id/updateAddress/:addressId', verifyToken, customerController.updateAddress);
 router.get('/:id/alladdress', verifyToken, customerController.getAddress);
 router.post('/:id/placeOrder', verifyToken, customerController.placeOrder);
+router.put('/:id/orders/:orderId/cancel',verifyToken,customerController.cancelOrder)
 router.post('/:id/addcartitem', verifyToken, customerController.addCartItem);
 router.get('/:id/orders', verifyToken, customerController.getUserOrder);
 

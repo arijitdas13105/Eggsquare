@@ -14,6 +14,8 @@ import {
   ADD_TO_CUSTOMER_CART,
   GET_USER_ORDER_HISTORY_SUCCESS,
   LOGOUT_USER,
+  CANCEL_ORDER_FAILURE,
+  CANCEL_ORDER_SUCCESS
 } from "../constants/allContants";
 import axios from "axios";
 export const loginSuccess = (token, customer) => {
@@ -59,19 +61,16 @@ export const logoutUser = () => {
 // export const registerUser = (userData) => async (dispatch) => {
 export const registerUser = (email,password) => async (dispatch) => {
   try {
-    // Make an API request to your server to register the user
-    // const response = await axios.post(`${BASE_URL}/api/customer/register`, userData);
-    const response = await axios.post(`${BASE_URL}/api/customer/register`, {email,password});
+   const response = await axios.post(`${BASE_URL}/api/customer/register`, {email,password});
 
-    // Dispatch a success action if registration is successful
     dispatch({
       type: "REGISTER_SUCCESS",
       payload: response.data,
     });
   } catch (error) {
-    // Dispatch an error action if registration fails
     dispatch({
       type: "REGISTER_FAIL",
+      // payload: response.data.error,
       payload: error.response.data.error,
     });
   }
@@ -225,4 +224,37 @@ export const getOrderHistorySuccess = (orderHistory) => {
     type: GET_USER_ORDER_HISTORY_SUCCESS,
     payload: orderHistory,
   };
+
+
 };
+
+
+export const cancelOrder=(userId,orderId)=>async(dispatch)=>{
+  try {
+    const authToken = localStorage.getItem("token");
+    const config={
+      headers:{
+        Authorization:authToken
+      }
+    }
+    const response= await axios.put(`${BASE_URL}/api/customer/${userId}/orders/${orderId}/cancel`,{},config)
+    const cancelOrderItem=response.data.order
+    if (response.status===200){
+     
+      
+      dispatch({
+        type:CANCEL_ORDER_SUCCESS,
+        payload:cancelOrderItem
+      })
+    }else{
+      console.error("Error canceling order:", response.data.error);
+      dispatch({
+        type:CANCEL_ORDER_FAILURE,
+        payload:cancelOrderItem
+      })
+    }
+  } catch (error) {
+    console.error("Error canceling order:",error )
+   
+  }
+}

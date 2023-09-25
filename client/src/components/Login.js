@@ -18,8 +18,10 @@ const Login = () => {
   const cart = useSelector((state) => state.cart);
   const cartItems = useSelector((state) => state.cart.cartItems);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    
     try {
+      e.preventDefault();
       const cartItemData = cartItems.map((item) => ({
         title: item.title,
         price: item.price,
@@ -32,7 +34,9 @@ const Login = () => {
       dispatch(LoginAction(email, password));
       dispatch(addToCustomerCart(user.customer._id, cartItemData));
       navigate("/");
-    } catch (error) {}
+    } catch (error) {
+      console.log("first",error)
+    }
   };
 
   return (

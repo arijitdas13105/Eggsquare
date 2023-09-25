@@ -15,13 +15,34 @@ function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  
+
   //   const handleChange = (e) => {
   //     setFormData({ ...formData, [e.target.name]: e.target.value });
   //   };
+  const isEmailValid = (email) => {
+    // Regular expression to validate email format
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+   if (!isEmailValid(email)) {
+      // Email is not in a valid format, display a warning
+      toast("Please use a correct email format", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return;
+    }
+
   if (password !== confirmPassword) {
     // Passwords don't match, display an error message
     toast('Passwords do not match ', {

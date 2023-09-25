@@ -93,7 +93,7 @@
 //-----------------------
 import React, { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserOrder } from "../redux/actions/userActions";
+import { cancelOrder, getUserOrder } from "../redux/actions/userActions";
 import "./OrderHistory.css";
 import Loading from "./Loading.js"; 
 const OrderHistory = () => {
@@ -106,6 +106,11 @@ const OrderHistory = () => {
       dispatch(getUserOrder(userId));
     }
   }, [userId]);
+
+  const handleCancelOrder=(orderId) =>{
+    console.log("first",orderId)
+    dispatch( cancelOrder(userId,orderId))
+  }
 
   return (
     <div className="order-history-container">
@@ -156,6 +161,17 @@ const OrderHistory = () => {
               <span className="order-label">Order Status:</span>
               <span className="order-value">{order.orderStatus}</span>
             </div>
+            {
+              order.orderStatus!=="canceled" &&(
+                 <button
+              className="cancel-order-button"
+              onClick={() => handleCancelOrder(order._id)}
+            >
+              Cancel Order
+            </button>
+              )
+            }
+           
           </div>
         </div>
       ))}
