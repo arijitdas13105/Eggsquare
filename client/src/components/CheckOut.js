@@ -39,8 +39,9 @@ console.log("cartItems",cartItems);
 
   const handlePayment = async()=>{
     const customerId = user.customer._id;
-    const stripe = await loadStripe(process.env.STRIPE_PUBLIC_KRY);
-    // const stripe = await loadStripe("pk_test_51OOZUMSGnjCjqYGbt2zeJUsoEoGiHcSAclbN3oSjXjBz2UxPSN1odnnCxt9pY3WXDpHVBPL8kHQ2jtVjGKVkd3VJ00MLHK6M10");
+    // const stripe = await loadStripe(`${process.env.STRIPE_PUBLIC_KRY}`);
+    // const stripe = await loadStripe(process.env.STRIPE_PUBLIC_KRY);
+    const stripe = await loadStripe("pk_test_51OOZUMSGnjCjqYGbt2zeJUsoEoGiHcSAclbN3oSjXjBz2UxPSN1odnnCxt9pY3WXDpHVBPL8kHQ2jtVjGKVkd3VJ00MLHK6M10");
 
     const body = {
       products:cartItems,

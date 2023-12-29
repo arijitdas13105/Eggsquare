@@ -106,8 +106,8 @@ router.post('/create-checkout-session', async (req, res) => {
 		billing_address_collection: 'required',
         line_items:lineItems,
         mode:"payment",
-        success_url:"https://eggsquare.onrender.com/sucess",
-        cancel_url:"https://eggsquare.onrender.com/cancel",
+        success_url:"https://egggsquare.vercel.app/sucess",
+        cancel_url:"https://egggsquare.vercel.app/cancel",
         // success_url:"http://localhost:3000/sucess",
         // cancel_url:"http://localhost:3000/cancel",
 		
