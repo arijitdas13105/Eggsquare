@@ -4,6 +4,9 @@ import axios from "axios";
 import { LoginAction } from "../redux/actions/userActions";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { addToCustomerCart } from "../redux/actions/cartAction";
 // import "./AddressForm.css";
 import "./Login.css";
@@ -32,8 +35,33 @@ const Login = () => {
       }));
 
       dispatch(LoginAction(email, password));
+      if(user.isAuthenticated){
+          toast.success('login successfull ', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
       dispatch(addToCustomerCart(user.customer._id, cartItemData));
-      navigate("/");
+      navigate("/products");
+     
+      }else{
+        toast.error('login failed', {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+    
     } catch (error) {
       console.log("first",error)
     }
@@ -81,3 +109,10 @@ const Login = () => {
 };
 
 export default Login;
+
+
+
+
+
+
+//-------------//

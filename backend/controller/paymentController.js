@@ -32,6 +32,9 @@ exports.createRazorpayOrder = async (req, res) => {
 
     instance.orders.create(options, (error, order) => {
       if (error) {
+        
+				console.log("error-paymentController-36",error);
+				
         return res.status(500).json({ message: "Something Went Wrong!" });
       }
       res.status(200).json({ data: order });
@@ -56,9 +59,13 @@ exports.verify = async (req, res) => {
     if (razorpay_signature === expectedSign) {
       return res.status(200).json({ message: "Payment verified successfully" });
     } else {
+
       return res.status(400).json({ message: "Invalid signature sent!" });
     }
   } catch (error) {
     res.status(500).json({ error: "Server error" });
+    
+    console.log("error-paymentController-68",error);
+				
   }
 };

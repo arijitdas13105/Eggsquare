@@ -8,6 +8,7 @@ const app=express()
 app.use(cors())
 app.use(express.json())
 app.use(cors({origin:'*'}))
+// app.use(cors({origin:'http://localhost:3000'}))
 
 
 const port=process.env.PORT||5000;

@@ -16,7 +16,8 @@
   margin: 0;
   padding: 10px;
 
-  
+  background-color:yellow;
+
  
 }
 
@@ -42,14 +43,19 @@
 }
 
 .nav-menus li {
-  padding: 10px;
+  /* padding: 10px; */
   color: #8796ab;
   cursor: pointer;
   transition: all 0.3s ease;
   list-style: none;
   text-decoration: none;
+  color: #000000;
+  font-weight: bold;
 }
 
+.nav-text{
+  transition: 0.3s ease;
+}
 .nav-menus li a {
   text-decoration: none;
   color: inherit; 
@@ -58,7 +64,17 @@
 .nav-menus li:hover {
   color: #333;
 }
-
+.nav-text.active {
+  /* background-color: white; */
+  border-radius: 20%;
+  padding: 1px;
+  border-bottom: 5px solid red;
+}
+.nav-text:hover {
+  background-color: rgb(199, 139, 139);
+  border-radius: 20%;
+  padding: 1px;
+}
 .self-icon {
   display: flex;
   gap: 10px;
@@ -81,15 +97,17 @@
 .shoping-icon {
   margin: 0;
   padding: 0;
+  color: black;
 }
 
 .cart-item-count {
-  background-color: #8796ab;
-  color: #000000;
   border-radius: 50%;
   font-size: 10px;
   padding: 4px 8px;
   margin: 0;
+  background-color: black;
+  color: white;
+  font-weight: bold;
 }
 
 .dropdown-menu {

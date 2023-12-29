@@ -33,7 +33,7 @@ const Cart = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  console.log("user is ", user);
+  // console.log("user is ", user);
   useEffect(() => {
     dispatch(getAllCart());
     checkUserLoginStatus();
@@ -161,11 +161,9 @@ const Cart = () => {
             <FontAwesomeIcon style={{color:"red"}} icon={faTrash} onClick={() => handleRemoveItem(item.id)} />
             
 
-                  {/* <button onClick={() => handleRemoveItem(item.id)}>🗑️</button> Delete button */}
-                  {/* <button onClick={() => handleRemoveItem(item.id)}>🗑️</button> Delete button */}
                 </div>
                 <div className="cart-item-total-holder">
-                  <p className="cart-item-total">Total: ₹{item.total}</p>
+                  <p className="cart-item-total">Totalss: ₹{item.total}</p>
                 </div>
               </div>
             </li>

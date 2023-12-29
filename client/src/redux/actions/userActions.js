@@ -40,11 +40,15 @@ export const LoginAction = (email, password) => async (dispatch) => {
     });
 
     const { tokens, customer } = response.data;
-
+    console.log("tokens",tokens)
+    console.log("customer",customer)
     dispatch(loginSuccess(tokens, customer));
 
     localStorage.setItem("token", tokens);
+    // const localSet=localStorage.setItem("token", tokens);
   } catch (error) {
+    console.error('LoginAction error:', error);
+
     dispatch(loginFail("login failed:", error));
   }
 };
@@ -163,6 +167,7 @@ export const placeOrder = (userId, orderData) => async (dispatch) => {
       orderData,
       config
     );
+    console.log("response at userAction-166",response);
   } catch (error) {
     console.error("Error placing order:", error);
   }

@@ -17,6 +17,7 @@ exports.registerCustomer = async (req, res) => {
     customer = new Customer({ email, password });
 
     await customer.save();
+    // console.log("new customer",customer)
     res.json({ message: "Customer registered successfully" });
   } catch (error) {
     console.error("Error in registerCustomer:", error);
@@ -39,11 +40,15 @@ exports.login = async (req, res) => {
     if (customer.password !== password) {
       return res.status(401).json({ error: "invalid password" });
     }
-    const token = jwt.sign(
+    if(customer){
+      const token = jwt.sign(
       { customerId: customer._id },
       process.env.JWT_SECRET
     );
     res.status(200).json({ success: true, customer: customer, tokens: token });
+    // console.log("customer is ->",customer)
+    }
+    
   } catch (error) {
     console.error("Error in loginCustomer:", error);
     res.status(500).json({ error: "Server error" });
@@ -162,6 +167,8 @@ exports.addCartItem = async (req, res) => {
       return res.status(404).json({ error: "Customer not found" });
     }
 
+    console.log("customername",customer.name);
+				
     if (
       !Array.isArray(cartItemData) ||
       cartItemData.some(

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import "./Navbar.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faPerson, faBars } from "@fortawesome/free-solid-svg-icons";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCart } from "../redux/actions/cartAction";
 import { logoutUser } from "../redux/actions/userActions";
@@ -13,9 +13,10 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showDropDown, setShowDropDown] = useState(false);
-  const [showMenu, setShowMenu] = useState(false); 
+  const [showMenu, setShowMenu] = useState(false);
   const cartItems = useSelector((state) => state.cart.cartItems);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const user = useSelector((state) => state.user);
 
   const handleCart = () => {
     dispatch(getAllCart(cartItems));
@@ -34,7 +35,6 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  // Function to toggle the menu
   const toggleMenu = () => {
     setShowMenu(!showMenu);
   };
@@ -42,29 +42,25 @@ const Navbar = () => {
   return (
     <div className="nav-container">
       <div className="logo">
-        <Link to="/">
-        <h1 >eggSquare</h1>
-        </Link>
-        
+        <NavLink to="/">
+          <h1>eggSquare</h1>
+        </NavLink>
       </div>
       <div className={`nav-menus ${showMenu ? 'show-menu' : 'hide-menu'}`}>
         <ul>
-          <Link to="/">
+          <NavLink to="/" className="nav-text">
             <li>Home</li>
-          </Link>
-          <Link to="/products">
+          </NavLink>
+          <NavLink to="/products" className="nav-text">
             <li>Products</li>
-          </Link>
-          {/* <Link to="/">
-            <li>Contact</li>
-          </Link> */}
-          <Link to="/order-history">
+          </NavLink>
+          <NavLink to="/order-history" className="nav-text">
             <li>Order History</li>
-          </Link>
+          </NavLink>
         </ul>
       </div>
       <div className="self-icon">
-        <Link className="cart-icon" to="/cart">
+        <NavLink className="cart-icon" to="/cart">
           <FontAwesomeIcon
             icon={faCartShopping}
             onClick={handleCart}
@@ -75,31 +71,28 @@ const Navbar = () => {
           ) : (
             <span className="cart-item-count">0</span>
           )}
-        </Link>
+        </NavLink>
         <div className="dropdown">
           {isAuthenticated ? (
-            // If the user is authenticated, show the dropdown
             <>
               <div className="person-icon" onClick={toggleDropDown}>
                 <FontAwesomeIcon icon={faPerson} />
               </div>
               {showDropDown && (
                 <ul className="dropdown-menu">
-                  <Link to="/order-history">
+                  <NavLink to="/order-history">
                     <li>Order History</li>
-                  </Link>
+                  </NavLink>
                   <li onClick={handleLogout}>Logout</li>
                 </ul>
               )}
             </>
           ) : (
-            // If the user is not authenticated, redirect to the login page
-            <Link to="/login">
+            <NavLink to="/login">
               <FontAwesomeIcon icon={faPerson} />
-            </Link>
+            </NavLink>
           )}
         </div>
-        {/* Show/hide menu based on screen width */}
         <div className={`menu-icon ${showMenu ? 'hide' : ''}`} onClick={toggleMenu}>
           <FontAwesomeIcon icon={faBars} />
         </div>
